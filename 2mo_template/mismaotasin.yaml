@@ -1,0 +1,288 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Infrastructure for the 2mo (Mis Ma Ostsin) app.
+
+Resources:
+  # VPC Definition
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: 2moVpc
+
+  # Internet Gateway for Internet Access
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 2moIGW
+
+  # Attach Gateway to VPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  # Public Subnet for Resources
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: 2moPublicSubnet
+
+  # Route Table for Public Access
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: 2moRouteTable
+
+  # Default Route to Internet Gateway
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Associate Route Table with Public Subnet
+  RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref RouteTable
+
+# EC2 Security Group to Access RDS
+  SecurityGroupLambdaAndEc2toRDS:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow EC2 to access RDS
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0 # Allow SSH access
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16 # Allow MySQL access from VPC
+
+  # S3 Bucket for Storing Receipt Images
+  S3ReceiptBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 2mo-receipt-images-mismaostsin
+      VersioningConfiguration:
+        Status: Enabled
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          Event: s3:ObjectCreated:* 
+          Filter:
+            S3Key:
+              Rules:
+                - Name: suffix
+                  Value: .jpg
+                - Name: suffix
+                  Value: .png
+                - Name: suffix
+                  Value: .jpeg
+    DeletionPolicy: Delete
+
+
+     # S3 Bucket for Storing Receipt Images
+  S3CodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 2mo-code-storage-bucket-mismaostsin
+      VersioningConfiguration:
+        Status: Enabled
+    DeletionPolicy: Delete
+
+  # Lambda Execution Role for processing receipts
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaS3ToRDSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: 
+                    - !Sub arn:aws:s3:::${S3ReceiptBucket}/*
+                    - !Ref S3CodeBucket
+              - Effect: Allow
+                Action:
+                  - textract:AnalyzeDocument
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - rds:DescribeDBInstances
+                  - rds:ExecuteStatement
+                Resource: '*'
+
+  # Lambda Function to Process the Receipt
+  LambdaProcessReceipt:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ProcessReceiptLambda
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref S3CodeBucket
+        S3Key: lambda/code.zip
+      Runtime: python3.8
+      Timeout: 300
+
+
+  # Security Group for Lambda to access RDS via VPC
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow Lambda to access RDS
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306 # MySQL port for RDS access
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SecurityGroupLambdaAndEc2toRDS
+
+  # EventBridge Rule to Trigger Lambda on S3 Upload
+  EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: TriggerLambdaOnS3Upload
+      EventPattern:
+        Source:
+          - aws.s3
+        DetailType:
+          - AWS API Call via CloudTrail
+        Resources:
+          - !Sub arn:aws:s3:::${S3ReceiptBucket
+        Detail:
+          eventName:
+            - PutObject
+      Targets:
+        - Arn: !GetAtt LambdaProcessReceipt.Arn
+          Id: TargetLambda
+
+  
+
+  # EC2 Instance for Running dbt (data transformation)
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      KeyName: KEY
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds:
+        - !Ref SecurityGroupLambdaAndEc2toRDS
+      ImageId: ami-0c02fb55956c7d316 # Placeholder AMI ID
+      Tags:
+        - Key: Name
+          Value: 2moEC2
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      UserData:
+      #!/bin/bash
+      # Update package lists and upgrade packages
+      sudo apt update -y
+      sudo apt upgrade -y
+      # Install necessary dependencies
+      sudo apt install -y python3 python3-venv python3-pip libmysqlclient-dev
+      mkdir -p /home/ubuntu/dbt_project
+      cd /home/ubuntu/dbt_project
+
+      #  virtual environment
+      python3 -m venv dbt-env
+      source dbt-env/bin/activate
+      pip install --upgrade pip
+
+      # Install DBT with MySQL , MySQL client
+      pip install dbt-mysql
+      pip install mysqlclient
+
+      # Deactivate the virtual environment
+      deactivate
+      # Ensure permissions for the Ubuntu user
+      chown -R ubuntu:ubuntu /home/ubuntu/dbt_project
+    DeletionPolicy: Delete
+
+
+  EC2InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service: ec2.amazonaws.com
+      Policies:
+        - PolicyName: EC2RolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "rds:DescribeDBInstances"
+                  - "rds:ExecuteStatement"
+                Resource: "*"
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2InstanceRole
+
+  # RDS MySQL Instance for Storing Data
+  MySQLRDS:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: data2mo
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      MasterUsername: '!Ref MySQLAdminuser'
+      MasterUserPassword: '!Ref MySQLAdminPassword'
+      AllocatedStorage: '20'
+      VPCSecurityGroups:
+        - !Ref SecurityGroupLambdaAndEc2toRDS
+      DBSubnetGroupName: !Ref DBSubnetGroup
+    DeletionPolicy: Delete
+
+  # DB Subnet Group for RDS
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PublicSubnet
+
+Outputs:
+  EC2PublicIP:
+    Description: Public IP of EC2 instance
+    Value: !GetAtt EC2Instance.PublicIp
+
+   
