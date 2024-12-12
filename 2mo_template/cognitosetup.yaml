@@ -4,7 +4,6 @@ Description: Cognito setup for the 2mo (Mis Ma Ostsin) app.
 
 
 Resources:
-  # Create a Cognito User Pool
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -21,7 +20,7 @@ Resources:
           RequireNumbers: true
           RequireSymbols: true
 
-  # Create a Cognito User Pool Client
+  # Cognito User Pool Client
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -29,13 +28,14 @@ Resources:
       UserPoolId: !Ref UserPool
       GenerateSecret: false
       ExplicitAuthFlows:
-        - USER_PASSWORD_AUTH  # Login only, no sign-up
+        - ALLOW_USER_PASSWORD_AUTH   # Login only, no sign-up
+        - ALLOW_REFRESH_TOKEN_AUTH
       CallbackURLs:
-        - "http://localhost:3000"  # Replace with your frontend URL
+        - "http://localhost:3000"  
       LogoutURLs:
-        - "http://localhost:3000/logout"  # Replace with your frontend logout URL
+        - "http://localhost:3000/logout" 
 
-  # Create a Cognito Identity Pool
+  #  Cognito Identity Pool
   IdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
@@ -54,48 +54,30 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Federated: cognito-identity.amazonaws.com  # Cognito Federated Identity
+              Federated: cognito-identity.amazonaws.com  
             Action: sts:AssumeRoleWithWebIdentity
             Condition:
               StringEquals:
-                cognito-identity.amazonaws.com:aud: !Ref IdentityPool  # Ensures the Identity Pool can assume the role
+                cognito-identity.amazonaws.com:aud: !Ref IdentityPool  
               StringLike:
-                cognito-identity.amazonaws.com:amr: authenticated  # Ensures only authenticated users assume this role
+                cognito-identity.amazonaws.com:amr: authenticated  
       Policies:
         - PolicyName: AuthenticatedPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
+              # DynamoDB access
               - Effect: Allow
                 Action: "dynamodb:Query"
                 Resource: "*"
-
-  # IAM Role for Unauthenticated Users (Optional)
-  UnauthenticatedRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Federated: cognito-identity.amazonaws.com  # Cognito Federated Identity
-            Action: sts:AssumeRoleWithWebIdentity
-            Condition:
-              StringEquals:
-                cognito-identity.amazonaws.com:aud: !Ref IdentityPool  # Ensures the Identity Pool can assume the role
-              StringLike:
-                cognito-identity.amazonaws.com:amr: unauthenticated  # Ensures only unauthenticated users assume this role
-      Policies:
-        - PolicyName: UnauthenticatedPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
               - Effect: Allow
-                Action: "dynamodb:Scan"
-                Resource: "*"
-
-
+                Action: 
+                  - "s3:PutObject"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - arn:aws:s3:::2mo-receipt-images-mismaostsin-testets
+                  - arn:aws:s3:::2mo-receipt-images-mismaostsin-testets/*
 
 
   # Attach IAM roles to Identity Pool
@@ -105,7 +87,7 @@ Resources:
       IdentityPoolId: !Ref IdentityPool
       Roles:
         authenticated: !GetAtt AuthenticatedRole.Arn
-        unauthenticated: !GetAtt UnauthenticatedRole.Arn
+
 
 Outputs:
   UserPoolId:

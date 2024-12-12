@@ -1,0 +1,25 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: test S3 bucket to upload images from front end 2mo (Mis Ma Ostsin) app.
+#https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html
+
+Resources:
+  S3ReceiptBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: 2mo-receipt-images-mismaostsin-testets
+      VersioningConfiguration:
+        Status: Enabled
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - "*"
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedHeaders:
+              - "*"
+            MaxAge: 3000

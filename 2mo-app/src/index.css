@@ -1,0 +1,127 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #f4f7fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #333;
+}
+
+/* General Container Styles */
+.container,
+.login-container,
+.upload-container {
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Titles */
+h2,
+h3,
+.login-title,
+.upload-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #2a3d52;
+}
+
+.upload-title {
+  font-size: 1.5rem;
+}
+
+/* Inputs */
+input,
+.login-input,
+.upload-input {
+  width: 100%;
+  font-size: 1rem;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  margin-bottom: 15px;
+}
+
+input:focus,
+.login-input:focus,
+.upload-input:focus {
+  border-color: #4b9dff;
+  box-shadow: 0 0 3px rgba(75, 157, 255, 0.5);
+}
+
+/* Buttons */
+button,
+.login-button,
+.upload-button {
+  padding: 14px;
+  font-size: 1.1rem;
+  background-color: #4b9dff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+}
+
+button:hover,
+.login-button:hover,
+.upload-button:hover {
+  background-color: #3a8bda;
+}
+
+button:active,
+.login-button:active,
+.upload-button:active {
+  transform: scale(0.98);
+}
+
+button:disabled,
+.upload-button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+/* Messages */
+p,
+.upload-message {
+  margin-top: 20px;
+  font-size: 1rem;
+}
+
+.upload-message {
+  color: #4caf50;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .container,
+  .login-container,
+  .upload-container {
+    padding: 20px;
+  }
+
+  h2,
+  h3,
+  .login-title,
+  .upload-title {
+    font-size: 1.5rem;
+  }
+
+  input,
+  button,
+  .login-input,
+  .upload-input,
+  .login-button,
+  .upload-button {
+    font-size: 1rem;
+  }
+}

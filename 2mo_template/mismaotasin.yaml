@@ -77,9 +77,9 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0 # Allow SSH access
         - IpProtocol: tcp
-          FromPort: 3306
-          ToPort: 3306
-          CidrIp: 10.0.0.0/16 # Allow MySQL access from VPC
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 10.0.0.0/16 # Allow Postgresql access from VPC
 
   # S3 Bucket for Storing Receipt Images
   S3ReceiptBucket:
@@ -249,13 +249,13 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole
 
-  # RDS MySQL Instance for Storing Data
-  MySQLRDS:
+  # PostgreSQLRDS Instance for Data storage
+  PostgreSQLRDS:
     Type: AWS::RDS::DBInstance
     Properties:
       DBInstanceIdentifier: data2mo
       DBInstanceClass: db.t3.micro
-      Engine: mysql
+      Engine: postgres
       MasterUsername: 'admin'
       MasterUserPassword: 'admin1234'
       AllocatedStorage: '20'
