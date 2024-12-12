@@ -20,7 +20,8 @@ function FileUpload() {
   }, []);
 
   // Fetch user session from Amplify
-  async function getAuthenticatedUser() {
+  
+  const getAuthenticatedUser = async  () => {
     try {
       const sessionUser = await getCurrentUser(); 
       if (sessionUser) {
