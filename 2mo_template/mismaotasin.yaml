@@ -1,5 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Infrastructure for the 2mo (Mis Ma Ostsin) app.
+#https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html
 
 Resources:
   # VPC Definition
@@ -89,16 +90,7 @@ Resources:
         Status: Enabled
       NotificationConfiguration:
         EventBridgeConfiguration:
-          Event: s3:ObjectCreated:* 
-          Filter:
-            S3Key:
-              Rules:
-                - Name: suffix
-                  Value: .jpg
-                - Name: suffix
-                  Value: .png
-                - Name: suffix
-                  Value: .jpeg
+          EventBridgeEnabled: true
     DeletionPolicy: Delete
 
 
@@ -204,29 +196,29 @@ Resources:
         - Key: Name
           Value: 2moEC2
       IamInstanceProfile: !Ref EC2InstanceProfile
-      UserData:
-      #!/bin/bash
-      # Update package lists and upgrade packages
-      sudo apt update -y
-      sudo apt upgrade -y
-      # Install necessary dependencies
-      sudo apt install -y python3 python3-venv python3-pip libmysqlclient-dev
-      mkdir -p /home/ubuntu/dbt_project
-      cd /home/ubuntu/dbt_project
+      # UserData: |
+      #   #!/bin/bash
+      #   # Update package lists and upgrade packages
+      #   sudo apt update -y
+      #   sudo apt upgrade -y
+      #   # Install necessary dependencies
+      #   sudo apt install -y python3 python3-venv python3-pip libmysqlclient-dev
+      #   mkdir -p /home/ubuntu/dbt_project
+      #   cd /home/ubuntu/dbt_project
 
-      #  virtual environment
-      python3 -m venv dbt-env
-      source dbt-env/bin/activate
-      pip install --upgrade pip
+      #   #  virtual environment
+      #   python3 -m venv dbt-env
+      #   source dbt-env/bin/activate
+      #   pip install --upgrade pip
 
-      # Install DBT with MySQL , MySQL client
-      pip install dbt-mysql
-      pip install mysqlclient
+      #   # Install DBT with MySQL , MySQL client
+      #   pip install dbt-mysql
+      #   pip install mysqlclient
 
-      # Deactivate the virtual environment
-      deactivate
-      # Ensure permissions for the Ubuntu user
-      chown -R ubuntu:ubuntu /home/ubuntu/dbt_project
+      #   # Deactivate the virtual environment
+      #   deactivate
+      #   # Ensure permissions for the Ubuntu user
+      #   chown -R ubuntu:ubuntu /home/ubuntu/dbt_project
     DeletionPolicy: Delete
 
 
@@ -264,8 +256,8 @@ Resources:
       DBInstanceIdentifier: data2mo
       DBInstanceClass: db.t3.micro
       Engine: mysql
-      MasterUsername: '!Ref MySQLAdminuser'
-      MasterUserPassword: '!Ref MySQLAdminPassword'
+      MasterUsername: 'admin'
+      MasterUserPassword: 'admin1234'
       AllocatedStorage: '20'
       VPCSecurityGroups:
         - !Ref SecurityGroupLambdaAndEc2toRDS
