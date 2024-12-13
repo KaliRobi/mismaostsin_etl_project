@@ -22,7 +22,6 @@ function FileUpload() {
   // Fetch user session from Amplify
   
   const getAuthenticatedUser = async  () => {
-    try {
       const sessionUser = await getCurrentUser(); 
       if (sessionUser) {
         setUser(sessionUser);
@@ -30,10 +29,6 @@ function FileUpload() {
       } else {
         setMessage('User is not authenticated.');
       }
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      setMessage('Error fetching user.');
-    }
   }
 
   const handleFileChange = (e) => {
@@ -56,13 +51,13 @@ function FileUpload() {
     try {
       const result = await uploadData({
         identityID: user.identityId,  
-        path: 'uploads/', 
-        fileName: file.name,
-        contentType: file.type,
+        path: `uploads/${file.name}`, 
+        // fileName: file.name,
+        // contentType: file.type,
         data: file
       });
 
-      setMessage('File uploaded successfully: ' + result.key);
+      setMessage('File uploaded successfully');
     } catch (error) {
       console.error('Error uploading file:', error);
       setMessage('Error uploading file: ' + error.message);

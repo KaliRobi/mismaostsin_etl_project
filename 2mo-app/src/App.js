@@ -9,6 +9,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
 
+  // localStorage.clear()
   //  logout
   const handleLogout = async () => {
     try {
