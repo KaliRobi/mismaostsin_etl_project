@@ -172,7 +172,7 @@ Resources:
         DetailType:
           - AWS API Call via CloudTrail
         Resources:
-          - !Sub arn:aws:s3:::${S3ReceiptBucket
+          - !Sub arn:aws:s3:::${S3ReceiptBucket}
         Detail:
           eventName:
             - PutObject
