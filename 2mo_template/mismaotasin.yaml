@@ -161,7 +161,7 @@ Resources:
           ToPort: 3306
           SourceSecurityGroupId: !Ref SecurityGroupLambdaAndEc2toRDS
 
-  # EventBridge Rule to Trigger Lambda on S3 Upload
+  EventBridge Rule to Trigger Lambda on S3 Upload
   EventBridgeRule:
     Type: AWS::Events::Rule
     Properties:
@@ -180,9 +180,7 @@ Resources:
         - Arn: !GetAtt LambdaProcessReceipt.Arn
           Id: TargetLambda
 
-  
-
-  # EC2 Instance for Running dbt (data transformation)
+EC2 Instance for Running dbt (data transformation)
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -221,7 +219,6 @@ Resources:
       #   chown -R ubuntu:ubuntu /home/ubuntu/dbt_project
     DeletionPolicy: Delete
 
-
   EC2InstanceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -249,7 +246,9 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole
 
-  # PostgreSQLRDS Instance for Data storage
+  
+
+  PostgreSQLRDS Instance for Data storage
   PostgreSQLRDS:
     Type: AWS::RDS::DBInstance
     Properties:
@@ -271,6 +270,9 @@ Resources:
       DBSubnetGroupDescription: Subnet group for RDS
       SubnetIds:
         - !Ref PublicSubnet
+
+  
+
 
 Outputs:
   EC2PublicIP:
