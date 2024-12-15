@@ -1,0 +1,30 @@
+
+{
+"version":"0",
+"id":"b4f694cf-aad9-c4db-fd66-377a2b84ec52",
+"detail-type":"Object Created",
+"source":"aws.s3",
+"account":"842676000276",
+"time":"2024-12-15T11:40:09Z",
+"region":"eu-north-1",
+"resources":[
+   "arn:aws:s3:::2mo-receipt-images-mismaostsin"
+],
+"detail":{
+   "version":"0",
+   "bucket":{
+      "name":"2mo-receipt-images-mismaostsin"
+   },
+   "object":{
+      "key":"uploads/oyes.png",
+      "size":399088,
+      "etag":"349be1cd508d51eb5572283c664f4f54",
+      "version-id":"MDyyLLkqetVatXjI0k8LexOx.tPBXyzq",
+      "sequencer":"00675EC019D52EAE50"
+   },
+   "request-id":"0178ZW4KABFA4HK9",
+   "requester":"842676000276",
+   "source-ip-address":"82.131.30.96",
+   "reason":"PutObject"
+}
+}

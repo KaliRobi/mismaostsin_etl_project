@@ -95,7 +95,7 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.micro
+      InstanceType: t3 rol.micro
       KeyName: KEY
       SubnetId: !Ref PublicSubnet
       SecurityGroupIds:
@@ -157,8 +157,9 @@ Resources:
       FunctionName: ProcessReceiptLambda
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.8
-      Timeout: 300
+      Runtime: python3.9
+      Timeout: 900
+      Handler: "index.lambda_handler"
       Code:
         ZipFile: |
           def lambda_handler(event, context):
@@ -254,6 +255,18 @@ Resources:
                   Action:
                     - cloudwatch:PutMetricData
                   Resource: arn:aws:cloudwatch::aws:*e
+          - PolicyName: TextractPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - textract:DetectDocumentText
+                    - textract:StartDocumentTextDetection
+                    - textract:GetDocumentTextDetection
+                    - textract:AnalyzeDocument
+                  Resource: 
+                    - !Sub arn:aws:s3:::2mo-receipt-images-mismaostsin/*
 
   # EC2 Security Group to Access RDS
   SecurityGroupLambdaAndEc2toRDS:
