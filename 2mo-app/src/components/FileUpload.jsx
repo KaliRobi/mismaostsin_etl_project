@@ -52,8 +52,10 @@ function FileUpload() {
       const result = await uploadData({
         identityID: user.identityId,  
         path: `uploads/${file.name}`, 
-        // fileName: file.name,
-        // contentType: file.type,
+        metadata: {                    
+          username: user.identityId,
+      },
+      
         data: file
       });
 
