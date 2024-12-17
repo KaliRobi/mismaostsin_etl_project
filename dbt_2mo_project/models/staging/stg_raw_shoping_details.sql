@@ -2,7 +2,7 @@ WITH purchases_with_date AS (
 SELECT
     goods_name AS item_name,
     purchase_id,
-    amount,
+    quantity,
     price,
     DATE(insert_time) AS purchase_date,
     client
