@@ -1,13 +1,17 @@
 {{
 config(
     materialized='table',
-    alias = 'item')
+    alias = 'item',
+    post_hook="ALTER TABLE {{ this }} ADD COLUMN id SERIAL PRIMARY KEY;"
+    )
 }}
 
 
 SELECT DISTINCT
-    ROW_NUMBER() OVER( PARTITION BY item ORDER BY item) AS id,
-    item_name
+    item_name,
+    amount,
+    price
+FROM  {{ ref('stg_raw_shoping_details') }}
 
 
-FROM FROM {{ ref('stg_raw_shoping_details') }}
+

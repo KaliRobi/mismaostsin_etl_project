@@ -1,11 +1,11 @@
 {{ config(
     materialized='table',
-    alias='app_users'
+    alias='app_users',
+    post_hook="ALTER TABLE {{ this }} ADD COLUMN id SERIAL PRIMARY KEY;"
 ) }}
 
 WITH app_users AS (
-    SELECT 
-        ROW_NUMBER() OVER (PARTITION BY client ORDER BY client  ) AS user_id,
+    SELECT DISTINCT        
         client AS user_name
     FROM {{ ref('stg_raw_shoping_details') }}
     GROUP BY client

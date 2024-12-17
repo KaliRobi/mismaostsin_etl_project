@@ -30,7 +30,7 @@ def lambda_handler(event, context):
         DocumentLocation={'S3Object': {'Bucket': bucket_name, 'Name': file_key}}
     )
     
-    # Get the Job ID
+   
     job_id = response['JobId']
     print(f"Started Textract job with ID: {job_id}")
 
