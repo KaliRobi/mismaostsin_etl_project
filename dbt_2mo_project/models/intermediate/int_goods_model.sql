@@ -5,6 +5,5 @@
 ) }}
 
 SELECT DISTINCT 
-item_name
+item_name AS name
 FROM {{ ref('stg_raw_shoping_details') }}
-GROUP BY item_name

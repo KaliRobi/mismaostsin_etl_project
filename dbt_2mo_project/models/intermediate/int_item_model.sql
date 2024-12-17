@@ -8,10 +8,11 @@ config(
 
 
 SELECT DISTINCT
-    item_name,
-    amount,
+    ig.id AS goods_id,
+    quantity,
     price
-FROM  {{ ref('stg_raw_shoping_details') }}
+FROM  {{ ref('stg_raw_shoping_details') }} rs
+JOIN {{ref('int_goods_model')}} ig on ig.name = rs.item_name
 
 
 
