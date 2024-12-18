@@ -22,15 +22,34 @@ def lambda_handler(event, context):
     file_key = event['detail']['object']['key']
     
 
-    s3_object = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    image_data = s3_object['Body'].read()
-
-
+  
     response = textract_client.start_document_text_detection(
         DocumentLocation={'S3Object': {'Bucket': bucket_name, 'Name': file_key}}
     )
     
    
     job_id = response['JobId']
-    print(f"Started Textract job with ID: {job_id}")
+    print(f"Textract starts job with ID: {job_id}")
 
+    response = textract_client.start_document_text_detection(
+        DocumentLocation={'S3Object': {'Bucket': bucket_name, 'Name': file_key}}
+    )
+    
+    
+    # run job
+    while True:
+        result = textract_client.get_document_text_detection(JobId=job_id)
+        if result['JobStatus'] == 'SUCCEEDED':
+            break
+        time.sleep(5)
+    
+    # Extract text
+    text = "\n".join([block['Text'] for block in result['Blocks'] if block['BlockType'] == 'LINE'])
+
+    # Print the extracted text
+    print(text)
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Text extraction complete.')
+    }
