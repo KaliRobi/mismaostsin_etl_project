@@ -1,6 +1,6 @@
 {{config(
     materialized='table',
-    alias='purchase',
+    alias='int_purchase',
     post_hook="ALTER TABLE {{ this }} ADD COLUMN id SERIAL PRIMARY KEY;"
     )
 }}

@@ -1,7 +1,7 @@
 {{
     config(
         materialized='table',
-        alias='purchase_items_x'
+        alias='int_purchase_items_x'
 
     )
 }}
