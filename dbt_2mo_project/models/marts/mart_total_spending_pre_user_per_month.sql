@@ -16,6 +16,6 @@ from app_users u
 join {{ref('int_purchases_model')}} p on p.user_id = u.id
 join {{ref('int_purchase_items_x_model')}}  pix on pix.purchase_id = p.id
 join {{ref('int_item_model')}} i  on i.id = pix.item_id
-join goods g on g.id = i.goods_id
+join {{ref('int_goods_model')}} g on g.id = i.goods_id
 group by u.user_name,purchase_year, purchase_month
 order by u.user_name, purchase_year, purchase_month
