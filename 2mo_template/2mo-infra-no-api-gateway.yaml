@@ -71,6 +71,12 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnet
       RouteTableId: !Ref RouteTable
+  
+  RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref  PublicFallbackSubnet
+      RouteTableId: !Ref RouteTable
 
 # S3 Buckets for Recipt bucket where the images will be uploaded and the Bucket where the code.zip will be stored
 
@@ -92,12 +98,6 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
     DeletionPolicy: Delete
-
-# Dead Letter Queue for failed lambda execution
-  DLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: LambdaDLQ
 
   # EC2 Instance for Running dbt (data transformation)
   EC2Instance:
@@ -172,8 +172,6 @@ Resources:
                   "statusCode": 200,
                   "body": "Hello from Lambda"
               }
-      DeadLetterConfig:
-        TargetArn: !GetAtt DLQ.Arn
     DependsOn: 
       - LambdaExecutionRole
       - S3ReceiptBucket
@@ -240,9 +238,6 @@ Resources:
                     - s3:GetObject
                   Resource: 
                     - !Sub arn:aws:s3:::2mo-receipt-images-mismaostsin-central/*
-                - Effect: Allow
-                  Action: "sqs:SendMessage"
-                  Resource: !GetAtt DLQ.Arn
           - PolicyName: AWSLambdaBasicExecutionRole
             PolicyDocument:
               Version: '2012-10-17'
