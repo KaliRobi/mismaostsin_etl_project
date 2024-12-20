@@ -10,7 +10,7 @@
 Select 
 u.user_name
 ,SUM(i.price)
-from app_users u 
+from {{ref('int_user_model')}} u 
 join {{ref('int_purchases_model')}} p on p.user_id = u.id
 join {{ref('int_purchase_items_x_model')}}  pix on pix.purchase_id = p.id
 join {{ref('int_item_model')}} i  on i.id = pix.item_id

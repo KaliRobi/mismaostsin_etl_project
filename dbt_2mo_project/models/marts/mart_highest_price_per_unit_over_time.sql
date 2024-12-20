@@ -19,3 +19,4 @@ select
  from highest_price_per_unit 
 where rank = 1
 order by  purchase_date, cost_per_unit desc
+
