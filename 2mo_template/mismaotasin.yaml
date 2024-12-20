@@ -271,7 +271,13 @@ EC2 Instance for Running dbt (data transformation)
       SubnetIds:
         - !Ref PublicSubnet
 
-  
+   LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt LambdaProcessReceipt.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EventBridgeRule.Arn
 
 
 Outputs:

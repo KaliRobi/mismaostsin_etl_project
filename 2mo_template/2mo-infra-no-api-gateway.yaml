@@ -108,7 +108,6 @@ Resources:
       SubnetId: !Ref PublicSubnet
       SecurityGroupIds:
         - !Ref SecurityGroupLambdaAndEc2toRDS
-        # aws ec2 describe-images --owners amazon --filters "Name=name,Values=amzn2-ami-hvm-*" --query 'Images[*].[ImageId,Name]' --region eu-central-1 --output text
       ImageId: ami-00ac244ee0ad9050d  # amzn2-ami-hvm-2.0.20241014.0-x86_64-gp2
       IamInstanceProfile: !Ref EC2InstanceProfile
       # UserData: |
@@ -313,7 +312,14 @@ Resources:
       Roles:
         - !Ref EC2InstanceRole        
 
- 
+  #adds the triggeres to lambda
+   LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt LambdaProcessReceipt.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt EventBridgeRule.Arn
 
 
    # DB Subnet Group for RDS
